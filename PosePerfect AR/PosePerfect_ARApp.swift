@@ -12,8 +12,11 @@ import SwiftData
 struct PosePerfect_ARApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            ARFrameModel.self,
+            ARSkeletonModel.self,
+            JointModel.self
         ])
+
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
         do {
@@ -27,6 +30,6 @@ struct PosePerfect_ARApp: App {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(sharedModelContainer)
+        .modelContainer(sharedModelContainer)  // Pass the container to SwiftData
     }
 }

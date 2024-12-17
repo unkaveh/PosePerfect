@@ -24,3 +24,5 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
+// probably better to switch back to that
+// return FileManager.default.temporaryDirectory.appendingPathComponent(filename)
