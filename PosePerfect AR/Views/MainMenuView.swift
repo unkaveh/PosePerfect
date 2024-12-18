@@ -8,40 +8,50 @@
 import SwiftUI
 
 struct MainMenuView: View {
-    @Binding var showARView: Bool  
-    
+    @Binding var showARView: Bool
+    @State private var showGallery = false
+
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Body Tracking App")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .padding()
-            
-            Button(action: {
-                showARView = true  // Navigate to CameraView
-            }) {
-                Text("Camera")
-                    .frame(maxWidth: .infinity)
+        NavigationStack {
+            VStack(spacing: 20) {
+                Text("Main Menu")
+                    .font(.largeTitle)
                     .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
+                
+                Button(action: {
+                    // Show the AR view
+                    showARView = true
+                }) {
+                    Text("Start AR Experience")
+                        .font(.headline)
+                        .padding()
+                        .background(Color.blue.cornerRadius(8))
+                        .foregroundColor(.white)
+                }
+
+                Button(action: {
+                    // Show video gallery view
+                    showGallery = true
+                }) {
+                    Text("View Recorded Videos")
+                        .font(.headline)
+                        .padding()
+                        .background(Color.green.cornerRadius(8))
+                        .foregroundColor(.white)
+                }
+
+                Spacer()
             }
-            .padding(.horizontal)
-            
-            Button(action: {
-                exit(0)
-            }) {
-                Text("Off")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.red)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
+            .navigationDestination(isPresented: $showGallery) {
+                VideoGalleryView()
             }
-            .padding(.horizontal)
-            
-            Spacer()
+            .navigationBarTitle("PosePerfect AR", displayMode: .inline)
         }
     }
 }
+
+#Preview {
+    @Previewable @State var showARView = false
+    MainMenuView(showARView: $showARView)
+}
+

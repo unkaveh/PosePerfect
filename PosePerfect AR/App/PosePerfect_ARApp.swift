@@ -1,10 +1,3 @@
-//
-//  PosePerfect_ARApp.swift
-//  PosePerfect AR
-//
-//  Created by Kaveh.Afroukhteh on 12/17/24.
-//
-
 import SwiftUI
 import SwiftData
 
@@ -26,10 +19,29 @@ struct PosePerfect_ARApp: App {
         }
     }()
 
+    @State private var showARView = false  // State to toggle between views
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            if showARView {
+                CameraView(showARView: $showARView)
+            } else {
+                MainMenuView(showARView: $showARView)
+            }
         }
         .modelContainer(sharedModelContainer)  // Pass the container to SwiftData
+    }
+}
+
+#Preview {
+    // Preview the MainMenuView first (default state)
+    @Previewable @State var showARView = false
+
+    return Group {
+        if showARView {
+            CameraView(showARView: .constant(showARView))
+        } else {
+            MainMenuView(showARView: .constant(showARView))
+        }
     }
 }

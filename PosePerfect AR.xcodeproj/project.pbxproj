@@ -10,22 +10,9 @@
 		D07E7F2B2D11EBE0005A71E8 /* PosePerfect AR.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "PosePerfect AR.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		D07E7F6A2D12304D005A71E8 /* Exceptions for "PosePerfect AR" folder in "PosePerfect AR" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"PosePerfect-AR-Info.plist",
-			);
-			target = D07E7F0B2D11DA30005A71E8 /* PosePerfect AR */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		D07E7F0E2D11DA30005A71E8 /* PosePerfect AR */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				D07E7F6A2D12304D005A71E8 /* Exceptions for "PosePerfect AR" folder in "PosePerfect AR" target */,
-			);
 			path = "PosePerfect AR";
 			sourceTree = "<group>";
 		};
@@ -266,6 +253,8 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "We Need To Use Your Camera";
 				INFOPLIST_KEY_NSFileProviderDomainUsageDescription = "We need file access";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Please allow us to save to your photos";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Pics pics pics";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -301,6 +290,8 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "We Need To Use Your Camera";
 				INFOPLIST_KEY_NSFileProviderDomainUsageDescription = "We need file access";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Please allow us to save to your photos";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Pics pics pics";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
