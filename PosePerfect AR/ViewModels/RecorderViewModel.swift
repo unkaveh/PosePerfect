@@ -28,7 +28,8 @@ class RecorderViewModel: NSObject, ObservableObject {
         guard !isRecording else { return }
         isRecording = true
         self.arView = arView
-        
+        arView.debugOptions.insert(.showStatistics)
+
         arBodyTrackingService = ARBodyTrackingService(arView: arView)
         arBodyTrackingService?.setFrameUpdateHandler { [weak self] frame in
             self?.handleFrameUpdate(frame)
@@ -110,7 +111,7 @@ class RecorderViewModel: NSObject, ObservableObject {
 
     }
     
-    private func handleFrameUpdate(_ frame: ARFrame) {
+     func handleFrameUpdate(_ frame: ARFrame) {
         appendFrame(frame: frame)
         
         // Compute joint angles
