@@ -20,12 +20,19 @@ class RecorderViewModel: NSObject, ObservableObject {
     private var arDataPoints: [ARFrameModel] = []
     
     // Use a weak reference to avoid retain cycles if needed
-    weak var arView: ARView?
+    weak var arView: ARView? // TODO: Look up ARC (Automatic Reference Counting)
+    private var arBodyTrackingService: ARBodyTrackingService?
+    private var angleComputationService = AngleComputationService()
 
     func startRecording(for arView: ARView) {
         guard !isRecording else { return }
         isRecording = true
         self.arView = arView
+        
+        arBodyTrackingService = ARBodyTrackingService(arView: arView)
+        arBodyTrackingService?.setFrameUpdateHandler { [weak self] frame in
+            self?.handleFrameUpdate(frame)
+        }
         
         let outputURL = generateOutputURL()
         do {
@@ -103,12 +110,24 @@ class RecorderViewModel: NSObject, ObservableObject {
 
     }
     
+    private func handleFrameUpdate(_ frame: ARFrame) {
+        appendFrame(frame: frame)
+        
+        // Compute joint angles
+        let jointAngles = AngleComputationService.computeJointAngles(from: frame)
+        
+        // You can use jointAngles here for real-time feedback or save them for later analysis
+        print("Joint Angles: \(jointAngles)")
+    }
+    
     // MARK: - Capture AR Skeleton Data
     func captureFrameData(frame: ARFrame) {
         guard isRecording else { return }
+        let jointAngles = AngleComputationService.computeJointAngles(from: frame)
         let dataPoint = ARFrameModel(
             timestamp: frame.timestamp,
-            skeletonData: extractSkeletonData(from: frame)
+            skeletonData: extractSkeletonData(from: frame),
+            jointAngles: jointAngles
         )
         arDataPoints.append(dataPoint)
     }
@@ -148,7 +167,8 @@ class RecorderViewModel: NSObject, ObservableObject {
                             )
                         }
                     )
-                }
+                },
+                jointAngles: frame.jointAngles
             )
         }
         

@@ -12,6 +12,7 @@ import simd
 struct CodableARFrameModel: Codable {
     let timestamp: TimeInterval
     let skeletonData: [CodableARSkeletonModel]
+    let jointAngles: [String: Float]
 }
 
 struct CodableARSkeletonModel: Codable {
@@ -27,3 +28,5 @@ struct CodableJointModel: Codable {
         self.position = [position.x, position.y, position.z]  // Convert SIMD3 to array
     }
 }
+
+

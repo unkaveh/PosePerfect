@@ -12,10 +12,13 @@ import simd
 class ARFrameModel {
     var timestamp: TimeInterval
     @Relationship(deleteRule: .cascade) var skeletonData: [ARSkeletonModel] = []
+    var jointAngles: [String: Float] = [:]
     
-    init(timestamp: TimeInterval, skeletonData: [ARSkeletonModel] = []) {
+    
+    init(timestamp: TimeInterval, skeletonData: [ARSkeletonModel] = [], jointAngles: [String: Float] = [:]) {
         self.timestamp = timestamp
         self.skeletonData = skeletonData
+        self.jointAngles = jointAngles
     }
 }
 
