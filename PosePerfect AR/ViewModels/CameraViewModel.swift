@@ -2,34 +2,19 @@ import RealityKit
 import ARKit
 import SwiftUI
 
-class CameraViewModel: NSObject, ObservableObject, ARSessionDelegate {
+class CameraViewModel: NSObject, ObservableObject {
     let arView = ARView(frame: .zero)
-    private var characterAnchor = AnchorEntity()
-    private var jointEntities: [String: Entity] = [:]
+    private var bodyTrackingService: ARBodyTrackingService?
     private let recorderViewModel = RecorderViewModel()
     
     func setupARView() {
-        guard ARBodyTrackingConfiguration.isSupported else {
-            fatalError("Body tracking is not supported on this device.")
-        }
+        // Previously, we configured AR here. Now ARBodyTrackingService handles configuration.
+        // Just initialize the ARBodyTrackingService with the arView.
+        bodyTrackingService = ARBodyTrackingService(arView: arView)
         
-        let configuration = ARBodyTrackingConfiguration()
-        arView.session.run(configuration)
-        arView.scene.addAnchor(characterAnchor)
-        initializeSkeletonEntities()
-        
-        // Set self as the session delegate
-        arView.session.delegate = self
-    }
-    
-    private func initializeSkeletonEntities() {
-        let skeletonDef = ARSkeletonDefinition.defaultBody3D
-        for jointName in skeletonDef.jointNames {
-            let sphere = MeshResource.generateSphere(radius: 0.02)
-            let material = SimpleMaterial(color: .red, isMetallic: false)
-            let jointEntity = ModelEntity(mesh: sphere, materials: [material])
-            characterAnchor.addChild(jointEntity)
-            jointEntities[jointName] = jointEntity
+        // Set the onFrameUpdate closure to forward frames to the recorder.
+        bodyTrackingService?.setFrameUpdateHandler { [weak self] frame in
+            self?.recorderViewModel.appendFrame(frame: frame)
         }
     }
     
@@ -41,31 +26,5 @@ class CameraViewModel: NSObject, ObservableObject, ARSessionDelegate {
     func stopRecording() {
         print("Recording stopped")
         recorderViewModel.stopRecording()
-    }
-    
-    func session(_ session: ARSession, didUpdate frame: ARFrame) {
-        // Update character joints for visualization
-        updateSkeletonPositions(from: frame)
-        
-        // Append the frame for recording
-        recorderViewModel.appendFrame(frame: frame)
-    }
-    
-    private func updateSkeletonPositions(from frame: ARFrame) {
-        for anchor in frame.anchors {
-            guard let bodyAnchor = anchor as? ARBodyAnchor else { continue }
-            let skeleton = bodyAnchor.skeleton
-            let jointCount = skeleton.definition.jointCount
-            for i in 0..<jointCount {
-                let jointName = skeleton.definition.jointNames[i]
-                let jointTransform = skeleton.jointModelTransforms[i]
-                let worldJointTransform = bodyAnchor.transform * jointTransform
-                let position = simd_make_float3(worldJointTransform.columns.3)
-                
-                if let jointEntity = jointEntities[jointName] {
-                    jointEntity.position = position
-                }
-            }
-        }
     }
 }

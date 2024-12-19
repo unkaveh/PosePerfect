@@ -31,6 +31,7 @@ class ARBodyTrackingService: NSObject, ARSessionDelegate {
         arView.scene.addAnchor(characterAnchor)
         initializeSkeletonEntities()
         
+        // Set this service as the ARSession delegate
         arView.session.delegate = self
     }
     
