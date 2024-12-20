@@ -7,6 +7,7 @@ import CoreImage
 
 class RecorderViewModel: NSObject, ObservableObject {
     @Published var status: RecordingStatus = .idle
+    @Published var evaluationResults: SquatEvaluationResults?
     private var recorder: AVAssetWriter?
     private var videoInput: AVAssetWriterInput?
     private var pixelBufferAdaptor: AVAssetWriterInputPixelBufferAdaptor?
@@ -67,6 +68,7 @@ class RecorderViewModel: NSObject, ObservableObject {
             print("Raw recording saved successfully.")
             status = .completed
             self.saveARData()
+            self.evaluateSquatPerformance()
             // TODO: Post-processing after saving AR data
         }
     }
@@ -236,5 +238,80 @@ class RecorderViewModel: NSObject, ObservableObject {
         let filename = "PosePerfect_\(Date().timeIntervalSince1970).json"
         let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         return documentsURL.appendingPathComponent(filename)
+    }
+}
+
+extension RecorderViewModel {
+    func evaluateSquatPerformance() {
+        guard !arDataPoints.isEmpty else {
+            print("No AR data points to evaluate.")
+            return
+        }
+        
+        // Insert your logic from before (assuming you modified the angle computations):
+        let kneeAngles: [(Float, Float)] = arDataPoints.map {
+            let leftKnee = $0.jointAngles["leftKneeAngle"] ?? 180
+            let rightKnee = $0.jointAngles["rightKneeAngle"] ?? 180
+            let avgKnee = (leftKnee + rightKnee) / 2.0
+            let torsoAngle = $0.jointAngles["torsoAngle"] ?? 0
+            return (avgKnee, torsoAngle)
+        }
+        
+        guard let startIndex = kneeAngles.firstIndex(where: { $0.0 > SquatFormRules.standingKneeAngleThreshold }),
+              let endIndex = kneeAngles.lastIndex(where: { $0.0 > SquatFormRules.standingKneeAngleThreshold }) else {
+            print("Could not identify a start or end standing position.")
+            return
+        }
+        
+        let bottomIndices = kneeAngles.enumerated().compactMap { (index, angles) -> Int? in
+            let (kneeAngle, torsoAngle) = angles
+            if SquatFormRules.kneeAngleRange.contains(kneeAngle) && index >= startIndex && index <= endIndex {
+                return index
+            }
+            return nil
+        }
+        
+        guard !bottomIndices.isEmpty else {
+            print("No valid bottom position found within correct knee angle range.")
+            return
+        }
+        
+        var correctFramesCount = 0
+        var kneeAngleDeviations: [Float] = []
+        var torsoAngleDeviations: [Float] = []
+        
+        for i in bottomIndices {
+            let (kneeAngle, torsoAngle) = kneeAngles[i]
+            
+            let kneeInRange = SquatFormRules.kneeAngleRange.contains(kneeAngle)
+            let torsoInRange = (torsoAngle <= SquatFormRules.maxTorsoAngle)
+            
+            if kneeInRange && torsoInRange {
+                correctFramesCount += 1
+            }
+            
+            kneeAngleDeviations.append(abs(kneeAngle - SquatFormRules.idealKneeAngle))
+            torsoAngleDeviations.append(max(0, torsoAngle))
+        }
+        
+        let correctnessPercentage = (Float(correctFramesCount) / Float(bottomIndices.count)) * 100.0
+        let averageKneeAngleAtBottom = bottomIndices.map { kneeAngles[$0].0 }.reduce(0, +) / Float(bottomIndices.count)
+        let averageKneeDeviation = kneeAngleDeviations.reduce(0, +) / Float(kneeAngleDeviations.count)
+        let averageTorsoDeviation = torsoAngleDeviations.reduce(0, +) / Float(torsoAngleDeviations.count)
+        
+        let perfectForm = correctnessPercentage == 100.0
+        
+        let results = SquatEvaluationResults(
+            correctnessPercentage: correctnessPercentage,
+            averageKneeAngleAtBottom: averageKneeAngleAtBottom,
+            averageKneeDeviation: averageKneeDeviation,
+            averageTorsoDeviation: averageTorsoDeviation,
+            perfectFormAchieved: perfectForm
+        )
+        
+        DispatchQueue.main.async {
+            print("Evaluation complete. Results computed.", results)
+            self.evaluationResults = results
+        }
     }
 }

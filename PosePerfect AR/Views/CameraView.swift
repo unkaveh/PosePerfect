@@ -3,9 +3,9 @@ import RealityKit
 
 struct CameraView: View {
     @Binding var showARView: Bool
+    @EnvironmentObject var recorderViewModel: RecorderViewModel
     @StateObject private var viewModel = CameraViewModel()
     
-    // Snackbar State
     @State private var showSnackbar = false
     @State private var snackbarMessage = ""
     @State private var snackbarBgColor: Color = .gray
@@ -44,7 +44,6 @@ struct CameraView: View {
             }
             .padding()
             
-            // Snackbar Overlay
             SnackbarView(
                 show: $showSnackbar,
                 bgColor: snackbarBgColor,
@@ -54,7 +53,6 @@ struct CameraView: View {
                 message: snackbarMessage
             )
             
-            // Back Button
             VStack {
                 HStack {
                     Button(action: {
@@ -71,6 +69,10 @@ struct CameraView: View {
                 Spacer()
             }
             .padding()
+        }
+        .onAppear {
+            // Provide the shared recorderViewModel to CameraViewModel
+            viewModel.setRecorderViewModel(recorderViewModel)
         }
         .onChange(of: viewModel.recorderStatus) {
             handleStatusChange(viewModel.recorderStatus)

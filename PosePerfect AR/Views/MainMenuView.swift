@@ -1,15 +1,10 @@
-//
-//  MainMenuView.swift
-//  PosePerfect AR
-//
-//  Created by Kaveh.Afroukhteh on 12/17/24.
-//
-
 import SwiftUI
 
 struct MainMenuView: View {
     @Binding var showARView: Bool
     @State private var showGallery = false
+    @State private var showResultsView = false
+    @EnvironmentObject var recorderViewModel: RecorderViewModel
 
     var body: some View {
         NavigationStack {
@@ -19,7 +14,6 @@ struct MainMenuView: View {
                     .padding()
                 
                 Button(action: {
-                    // Show the AR view
                     showARView = true
                 }) {
                     Text("Start AR Experience")
@@ -30,7 +24,6 @@ struct MainMenuView: View {
                 }
 
                 Button(action: {
-                    // Show video gallery view
                     showGallery = true
                 }) {
                     Text("View Recorded Videos")
@@ -42,16 +35,34 @@ struct MainMenuView: View {
 
                 Spacer()
             }
+            .navigationTitle("PosePerfect AR")
+            .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(isPresented: $showGallery) {
                 VideoGalleryView()
             }
-            .navigationBarTitle("PosePerfect AR", displayMode: .inline)
+            // When showResultsView is true, navigate to ResultsView
+            .navigationDestination(isPresented: $showResultsView) {
+                if let results = recorderViewModel.evaluationResults {
+                    ResultsView(results: results) {
+                        // On go back, reset the results and dismiss the ResultsView
+                        recorderViewModel.evaluationResults = nil
+                        showResultsView = false
+                    }
+                } else {
+                    // If for some reason results are nil, just go back
+                    Text("No Results Found")
+                        .onAppear {
+                            showResultsView = false
+                        }
+                }
+            }
+            // Observe changes in evaluationResults and navigate to ResultsView if needed
+            .onReceive(recorderViewModel.$evaluationResults) { newValue in
+                if newValue != nil {
+                    // Display ResultsView
+                    showResultsView = true
+                }
+            }
         }
     }
 }
-
-#Preview {
-    @Previewable @State var showARView = false
-    MainMenuView(showARView: $showARView)
-}
-

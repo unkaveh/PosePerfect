@@ -21,27 +21,20 @@ struct PosePerfect_ARApp: App {
 
     @State private var showARView = false  // State to toggle between views
 
+    // Create a single RecorderViewModel instance at the highest level
+    @StateObject var recorderViewModel = RecorderViewModel()
+
     var body: some Scene {
         WindowGroup {
+            // Pass the recorderViewModel as an environment object to both views
             if showARView {
                 CameraView(showARView: $showARView)
+                    .environmentObject(recorderViewModel)
             } else {
                 MainMenuView(showARView: $showARView)
+                    .environmentObject(recorderViewModel)
             }
         }
-        .modelContainer(sharedModelContainer)  // Pass the container to SwiftData
-    }
-}
-
-#Preview {
-    // Preview the MainMenuView first (default state)
-    @Previewable @State var showARView = false
-
-    return Group {
-        if showARView {
-            CameraView(showARView: .constant(showARView))
-        } else {
-            MainMenuView(showARView: .constant(showARView))
-        }
+        .modelContainer(sharedModelContainer)
     }
 }
