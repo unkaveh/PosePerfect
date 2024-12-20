@@ -6,6 +6,7 @@ import VideoToolbox
 import CoreImage
 
 class RecorderViewModel: NSObject, ObservableObject {
+    @Published var status: RecordingStatus = .idle
     private var recorder: AVAssetWriter?
     private var videoInput: AVAssetWriterInput?
     private var pixelBufferAdaptor: AVAssetWriterInputPixelBufferAdaptor?
@@ -48,9 +49,10 @@ class RecorderViewModel: NSObject, ObservableObject {
             
             // Mark the start time for frames once we get the first ARFrame
             recordingStartTime = nil
-            
+            status = .recording
             print("Recording setup complete: \(outputURL)")
         } catch {
+            status = .error
             print("Failed to start recording: \(error)")
         }
     }
@@ -58,13 +60,14 @@ class RecorderViewModel: NSObject, ObservableObject {
     func stopRecording() {
         guard isRecording, let recorder = recorder else { return }
         isRecording = false
-        
+        status = .saving
         videoInput?.markAsFinished()
         recorder.finishWriting { [weak self] in
             guard let self = self else { return }
             print("Raw recording saved successfully.")
+            status = .completed
             self.saveARData()
-            // Post-processing (if needed) after saving AR data
+            // TODO: Post-processing after saving AR data
         }
     }
     
